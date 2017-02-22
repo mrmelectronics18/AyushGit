@@ -11,10 +11,10 @@ class BigController():
 		GPIO.setup(5,GPIO.OUT)
 		GPIO.setup(7,GPIO.OUT)
 		GPIO.setup(8,GPIO.OUT)
-		pwm1 = GPIO.PWM(3,100)
-		pwm2 = GPIO.PWM(5,100)
-		pwm3 = GPIO.PWM(7,100)
-		pwm4 = GPIO.PWM(8,100)
+		pwm1 = GPIO.PWM(3,10000)
+		pwm2 = GPIO.PWM(5,10000)
+		pwm3 = GPIO.PWM(7,10000)
+		pwm4 = GPIO.PWM(8,10000)
 		pygame.init()
 		pygame.joystick.init()
 		if pygame.joystick.get_init() == 1:
@@ -23,7 +23,7 @@ class BigController():
 		print "Joystick's name : "+joystickinit.get_name() + " id : "+str(joystickinit.get_id())
 		joystickinit.init()
 		joystick = joystickinit
-		self.main(pwm1,pwm2,pwm3,pwm4)
+		self.main(p1=pwm1,p2=pwm2,p3=pwm3,p4=pwm4)
 
 	def mapVal(self,a,b,c,d,e):
 		return (a-b)*(e-d)/(c-b) + d
@@ -37,16 +37,17 @@ class BigController():
 		p2.start(0)
 		p3.start(0)
 		p4.start(0)
+		
 
 		leftr = leftf = rightr = rightf = x = y = pressed = throttle = rot = 0
 		buffVal = 50
-		centerBuff = 530
+		centerBuff = 50
 		prevx = prevy = 512
 		prevRotVal = 0
 		topValue = 100
 		bufferRotVal = 20
 
-		while(1):
+		while(True):
 			for event in pygame.event.get():
 				if event.type == pygame.JOYAXISMOTION :
 					print ""
@@ -87,6 +88,7 @@ class BigController():
 				y = prevy - buffVal
 			if(x<=512+centerBuff and x>=512-centerBuff and y<=512+centerBuff and y>=512-centerBuff):
 				leftf = leftr = rightf = rightr = 0
+				print
 			elif(x<=512+centerBuff and x>=512-centerBuff):
 				if(y>=512+centerBuff):
 					rightf = self.mapVal(y,512+centerBuff,1023,0,top)
@@ -208,19 +210,19 @@ class BigController():
 			print("leftr : "+str(leftr)+" rightr : "+str(rightr))
 			print("Throttle : "+str(throttle))
 			print("Rotation Value: "+str(rotVal))
-			clock.tick(20)
+			
 			
 			p1.ChangeDutyCycle(leftf)
-			p1.ChangeDutyCycle(leftr)
-			p1.ChangeDutyCycle(rightf)
-			p1.ChangeDutyCycle(rightr)
+			p2.ChangeDutyCycle(leftr)
+			p3.ChangeDutyCycle(rightf)
+			p4.ChangeDutyCycle(rightr)
 
 			time.sleep(0.2)
 
 			if pressed == 2:
 				break
-				
-			
+		
+		pygame.quit()	
 
 
 

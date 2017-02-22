@@ -2,8 +2,8 @@ import time
 import RPi.GPIO as GPIO
 
 GPIO.setmode(GPIO.BOARD)
-GPIO.setup(12,GPIO.OUT)
-my_pwm = GPIO.PWM(12,100000)
+GPIO.setup(3,GPIO.OUT)
+my_pwm = GPIO.PWM(3,100)
 my_pwm.start(0)
 try:
 	while(True):
