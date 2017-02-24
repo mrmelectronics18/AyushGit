@@ -52,48 +52,48 @@ class I2C(object):
 #LSM9DS0
 
 class LSM9DS0():
-
-
+	
+	
 	LSM9DS0_CTRL_REG5_XM  =	0x24
-    LSM9DS0_CTRL_REG6_XM  =	0x25
+   	LSM9DS0_CTRL_REG6_XM  =	0x25
 	LSM9DS0_CTRL_REG7_XM  =	0x26
 
 	LSM9DS0_WHO_AM_I_G = 0x0F
-    LSM9DS0_CTRL_REG1_G = 0x20
-    LSM9DS0_CTRL_REG3_G = 0x22
-    LSM9DS0_CTRL_REG4_G = 0x23
-    LSM9DS0_OUT_X_L_G =	0x28
-    LSM9DS0_OUT_X_H_G =	0x29
-    LSM9DS0_OUT_Y_L_G =	0x2A
-    LSM9DS0_OUT_Y_H_G =	0x2B
-    LSM9DS0_OUT_Z_L_G =	0x2C
+    	LSM9DS0_CTRL_REG1_G = 0x20
+    	LSM9DS0_CTRL_REG3_G = 0x22
+    	LSM9DS0_CTRL_REG4_G = 0x23
+	LSM9DS0_OUT_X_L_G =	0x28
+    	LSM9DS0_OUT_X_H_G =	0x29
+    	LSM9DS0_OUT_Y_L_G =	0x2A
+    	LSM9DS0_OUT_Y_H_G =	0x2B
+    	LSM9DS0_OUT_Z_L_G =	0x2C
 	LSM9DS0_OUT_Z_H_G =	0x2D
 
 	LSM9DS0_OUT_TEMP_L_XM =	0x05
 	LSM9DS0_OUT_TEMP_H_XM =	0x06
 
 	LSM9DS0_STATUS_REG_M =	0x07
-    LSM9DS0_OUT_X_L_M =	0x08
-    LSM9DS0_OUT_X_H_M =	0x09
-    LSM9DS0_OUT_Y_L_M =	0x0A
-    LSM9DS0_OUT_Y_H_M =	0x0B
-    LSM9DS0_OUT_Z_L_M =	0x0C
+    	LSM9DS0_OUT_X_L_M =	0x08
+    	LSM9DS0_OUT_X_H_M =	0x09
+    	LSM9DS0_OUT_Y_L_M =	0x0A
+    	LSM9DS0_OUT_Y_H_M =	0x0B
+    	LSM9DS0_OUT_Z_L_M =	0x0C
 	LSM9DS0_OUT_Z_H_M =	0x0D
 
 	LSM9DS0_WHO_AM_I_XM = 0x0F
-    LSM9DS0_INT_CTRL_REG_M = 0x12
-    LSM9DS0_INT_SRC_REG_M =	0x13
-    LSM9DS0_CTRL_REG1_XM =	0x20
-    LSM9DS0_CTRL_REG2_XM =	0x21
-    LSM9DS0_CTRL_REG5_XM =	0x24
-    LSM9DS0_CTRL_REG6_XM =	0x25
+    	LSM9DS0_INT_CTRL_REG_M = 0x12
+    	LSM9DS0_INT_SRC_REG_M =	0x13
+    	LSM9DS0_CTRL_REG1_XM =	0x20
+    	LSM9DS0_CTRL_REG2_XM =	0x21
+    	LSM9DS0_CTRL_REG5_XM =	0x24
+    	LSM9DS0_CTRL_REG6_XM =	0x25
 	LSM9DS0_CTRL_REG7_XM = 0x26
 
 	LSM9DS0_OUT_X_L_A =	0x28
-    LSM9DS0_OUT_X_H_A =	0x29
-    LSM9DS0_OUT_Y_L_A =	0x2A
-    LSM9DS0_OUT_Y_H_A =	0x2B
-    LSM9DS0_OUT_Z_L_A =	0x2C
+    	LSM9DS0_OUT_X_H_A =	0x29
+   	LSM9DS0_OUT_Y_L_A =	0x2A
+    	LSM9DS0_OUT_Y_H_A =	0x2B
+   	LSM9DS0_OUT_Z_L_A =	0x2C
 	LSM9DS0_OUT_Z_H_A =	0x2D
 
 	__scales = {
@@ -114,7 +114,7 @@ class LSM9DS0():
 		self.gyr = I2C(0x6B)
 
 		self.mag.write8(self.LSM9DS0_CTRL_REG5_XM, 0b11110000) 
-        self.mag.write8(self.LSM9DS0_CTRL_REG6_XM, 0b00000000) 
+        	self.mag.write8(self.LSM9DS0_CTRL_REG6_XM, 0b00000000) 
 		self.mag.write8(self.LSM9DS0_CTRL_REG7_XM, 0b00000000)
 
 		self.accel.write8(self.LSM9DS0_CTRL_REG1_XM, 0b01100111) 
@@ -124,7 +124,7 @@ class LSM9DS0():
 		self.gyro.write8(self.LSM9DS0_CTRL_REG4_G, 0b00110000)
 
 	def rawAccel(self):
-		aX = self.acc.readU8(self.LSM9DS0_OUT_X_L_A) | self.accel.readU8(self.LSM9DS0_OUT_X_H_A) << 8
+		aX = self.acc.readU8(self.LSM9DS0_OUT_X_L_A) | self.accel.readU8     (self.LSM9DS0_OUT_X_H_A) << 8
 		aY = self.accel.readU8(self.LSM9DS0_OUT_Y_L_A) | self.accel.readU8(self.LSM9DS0_OUT_Y_H_A) << 8
 		aZ = self.accel.readU8(self.LSM9DS0_OUT_Z_L_A) | self.accel.readU8(self.LSM9DS0_OUT_Z_H_A) << 8
 
@@ -137,15 +137,15 @@ class LSM9DS0():
 		return accelArr
 
 	def rawMag(self):
-        magX = self.mag.readU8(self.LSM9DS0_OUT_X_L_M) | self.mag.readU8(self.LSM9DS0_OUT_X_H_M) << 8
-        magY = self.mag.readU8(self.LSM9DS0_OUT_Y_L_M) | self.mag.readU8(self.LSM9DS0_OUT_Y_H_M) << 8
-        magZ = self.mag.readU8(self.LSM9DS0_OUT_Z_L_M) | self.mag.readU8(self.LSM9DS0_OUT_Z_H_M) << 8
+        	magX = self.mag.readU8(self.LSM9DS0_OUT_X_L_M) | self.mag.readU8(self.LSM9DS0_OUT_X_H_M) << 8
+        	magY = self.mag.readU8(self.LSM9DS0_OUT_Y_L_M) | self.mag.readU8(self.LSM9DS0_OUT_Y_H_M) << 8
+        	magZ = self.mag.readU8(self.LSM9DS0_OUT_Z_L_M) | self.mag.readU8(self.LSM9DS0_OUT_Z_H_M) << 8
 
-        magArr = [magX, magY, magZ]
+        	magArr = [magX, magY, magZ]
 
-        for i in range(len(magArr)):
-            if magArr[i] > 32767:
-                magArr[i] -= 65536
+        	for i in range(len(magArr)):
+            		if magArr[i] > 32767:
+                		magArr[i] -= 65536
 
 	return magArr
 
