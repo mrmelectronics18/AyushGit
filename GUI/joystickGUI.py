@@ -1,5 +1,7 @@
 import pygame
 import time
+import os
+import math
 
 class BigController():
 
@@ -10,7 +12,6 @@ class BigController():
 	blue = (0,0,255)
 	height = 590
 	width = 590
-	robotic_arm = []
 
 	def __init__(self):
 		global joystick
@@ -28,30 +29,104 @@ class BigController():
 		self.mainDisp = pygame.display.set_mode(((self.width+10)*2,self.height+10))
 		pygame.display.set_caption('MotorCode')
 		self.roverDisp = pygame.Surface((590,590))
-		self.roverDisp.fill(self.white)
+		pygame.draw.circle(self.roverDisp,self.white,(295,295),295)
 		#pygame.draw.rect(self.roverDisp,self.white,[0,0,self.width,self.height])
 		self.mainDisp.blit(self.roverDisp,(5,5))
+		self.font = pygame.font.SysFont(None,35)
 		pygame.display.update()
 		self.main()
 
 	def mapVal(self,a,b,c,d,e):
 		return (a-b)*(e-d)/(c-b) + d
 
+	def getCoordinates(self,angle,distance):
+		x = math.cos(math.radians(angle)) * distance
+		y = math.sin(math.radians(angle)) * distance
+		return (int(x),int(y))
+
 	def hairPin(self,centerBuff):
 		hairpin_len = int(self.mapVal(centerBuff*2,0,1023,0,self.width))
 		pygame.draw.line(self.roverDisp,self.black,(self.width/2 - hairpin_len/2,self.height/2),(self.width/2 + hairpin_len/2,self.height/2),1)
 		pygame.draw.line(self.roverDisp,self.black,(self.width/2,self.height/2 - hairpin_len/2),(self.width/2,self.height/2 + hairpin_len/2),1)
-		self.swivelDisp = pygame.Surface((590,590/2-2.5))
-		self.armDisp = pygame.Surface((590,590/2+2.5))
-		self.swivelDisp.fill(self.white)
-		self.armDisp.fill(self.white)
-		self.mainDisp.blit(self.swivelDisp,(600,5))
-		self.mainDisp.blit(self.armDisp,(600,300))
-		centrePoint = (590/2,590/2)
-		endPoint = ()
+		self.buttonDisp = pygame.Surface((590,590/2-2.5))
+		self.sensorDisp = pygame.Surface((590,590/2+2.5))
+		self.buttonDisp.fill(self.white)
+		self.sensorDisp.fill(self.white)
 		#pygame.draw.rect(self.gameDisp,self.white,[600,5,self.width,self.height/2])
 		#pygame.draw.rect(self.gameDisp,self.white,[600,self.height/2 +10,self.width,self.height/2 - 5])
 
+	def processBut(self):
+		buttonSurfaces = []
+		for i in range(13):
+			if i in range(8,13):
+				t = pygame.Surface((116,90))
+			else:
+				t = pygame.Surface((145,90))
+			buttonSurfaces.append(t)
+			buttonSurfaces[i].fill(self.white)
+
+		print buttonSurfaces[4]
+		
+
+		for i in range(8):
+			pygame.draw.circle(buttonSurfaces[i],self.black,(40,45),10)
+			pygame.draw.circle(buttonSurfaces[i],self.white,(40,45),8)
+			if self.buttons[i] == 1:
+				pygame.draw.circle(buttonSurfaces[i],self.black,(40,45),8)
+			text = self.font.render(str(i),True,self.black)
+			buttonSurfaces[i].blit(text,(60,30))
+			if i in range(0,4):
+				self.buttonDisp.blit(buttonSurfaces[i],(i*145+3,0))
+			else:
+				print i
+				self.buttonDisp.blit(buttonSurfaces[i],((i-4)*145+3,100))
+
+		for i in range(8,13):
+			pygame.draw.circle(buttonSurfaces[i],self.black,(40,45),10)
+			pygame.draw.circle(buttonSurfaces[i],self.white,(40,45),8)
+			if self.buttons[i] == 1:
+				pygame.draw.circle(buttonSurfaces[i],self.black,(40,45),8)
+			text = self.font.render(str(i),True,self.black)
+			buttonSurfaces[i].blit(text,(60,30))
+			self.buttonDisp.blit(buttonSurfaces[i],((i-8)*116,200))
+
+		'''
+		pygame.draw.circle(buttonSurfaces[0],self.red,(40,45),10)
+		pygame.draw.circle(buttonSurfaces[12],self.red,(40,45),10)
+
+		button_no1 = self.font.render('0',True,self.red)
+		button_no2 = self.font.render('12',True,self.red)
+
+		pygame.draw.circle(buttonSurfaces[0],self.black,(40,45),8)
+		pygame.draw.circle(buttonSurfaces[12],self.black,(40,45),8)
+
+		buttonSurfaces[0].blit(button_no1,(60,30))
+		buttonSurfaces[12].blit(button_no2,(60,30))
+
+		self.buttonDisp.blit(buttonSurfaces[12],(0,180))
+		self.buttonDisp.blit(buttonSurfaces[0],(0,0))'''
+
+
+
+	def getAngle(self,x,y):
+		if(x==512):
+		    if(y>=512):
+		    	tangle = 270
+		    else:
+		    	tangle = 90
+		else:
+			m1 = (y-512.0)/(x-512.0)
+			m2 = (512.0-512.0)/(1023.0-0.0)
+			tangle =int(math.atan((m2-m1)/(1.0+m1*m2))*57.3)
+			if(x < 512):
+				tangle+=180
+			elif(y>512):
+				tangle+=360
+			if(tangle==360):
+				tangle = 0
+			if(x==512 and y==512):
+				tangle = 0
+		return tangle
 
 
 
@@ -69,7 +144,8 @@ class BigController():
 		bufferRotVal = 20
 		gameExit = False
 		rotVal = 0
-		
+		self.tangle = 0
+		self.buttons = [0,0,0,0,0,0,0,0,0,0,0,0,0]
 
 
 		while not gameExit:
@@ -77,15 +153,20 @@ class BigController():
 				if event.type == pygame.QUIT :
 					gameExit = True
 				elif event.type == pygame.JOYAXISMOTION :
-					x = joystick.get_axis(0)*512.0+512
-					y = joystick.get_axis(1)*512.0+512	
-					throttle = joystick.get_axis(3)*100.0+100
-					rotVal = joystick.get_axis(2)*100.0;
-				elif event.type == pygame.JOYBUTTONDOWN :
-					if joystick.get_button(5) == 1:
-						robotic_arm[0] --
-					elif joystick.get_button(9) == 1:
-						robotic_arm[0] ++
+					pass
+				elif event.type == pygame.JOYBUTTONDOWN:
+					for i in range(len(self.buttons)):
+						if joystick.get_button(i) == 1:
+							self.buttons[i] = 1
+				elif event.type == pygame.JOYBUTTONUP:
+					for i in range(len(self.buttons)):
+						if joystick.get_button(i) == 0:
+							self.buttons[i] = 0
+
+			x = joystick.get_axis(0)*512.0+512
+			y = joystick.get_axis(1)*512.0+512	
+			throttle = joystick.get_axis(3)*100.0+100
+			rotVal = joystick.get_axis(2)*100.0 
 					
 			if rotVal - prevRotVal >=bufferRotVal:
 				rotVal = prevRotVal + bufferRotVal
@@ -227,7 +308,7 @@ class BigController():
 			rightf = int(rightf)
 			rightr = int(rightr)
 			
-			print ("x : "+str(x)+" y : "+str(y))			
+			print ("x : "+str(x)+" y : "+str(y))
 			print("leftf : "+str(leftf)+" rightf : "+str(rightf))
 			print("leftr : "+str(leftr)+" rightr : "+str(rightr))
 			print("Throttle : "+str(throttle))
@@ -241,19 +322,166 @@ class BigController():
 			if pressed == 2:
 				break'''
 
+			leftPoint = (295-20,295)
+			rightPoint = (295+20,295)
+			point = (295,295)
+
+			if rotVal != 0:
+				if rotVal > 0:
+					if rotVal <= 50:
+						tx = int(295-(self.mapVal(rotVal,0,50,0,20)))
+						ty = int(math.sqrt(400-(tx-295)**2) + 295)
+						ty = 295 - (ty - 295)
+						leftPoint = (ty,tx)
+						print leftPoint
+						tx = int(295+(self.mapVal(rotVal,0,50,0,20)))
+						ty = int(math.sqrt(400-(tx-295)**2) + 295)
+						#ty = 295 - (ty - 295)
+						rightPoint = (ty,tx)
+						print rightPoint
+					elif rotVal <= 100:
+						tx = int(295+(self.mapVal(rotVal,50,100,0,20)))
+						ty = int(math.sqrt(400-(tx-295)**2) + 295)
+						ty = 295 - (ty - 295)
+						leftPoint = (tx,ty)
+						print leftPoint
+						tx = int(295-(self.mapVal(rotVal,50,100,0,20)))
+						ty = int(math.sqrt(400-(tx-295)**2) + 295)
+						#ty = 295 - (ty - 295)
+						rightPoint = (tx,ty)
+						print rightPoint
+				elif rotVal < 0:
+					if rotVal >= -50:
+						tx = int(295-(self.mapVal(rotVal,0,-50,0,20)))
+						ty = int(math.sqrt(400-(tx-295)**2) + 295)
+						#ty = 295 - (ty - 295)
+						leftPoint = (ty,tx)
+						print leftPoint
+						tx = int(295+(self.mapVal(rotVal,0,-50,0,20)))
+						ty = int(math.sqrt(400-(tx-295)**2) + 295)
+						ty = 295 - (ty - 295)
+						rightPoint = (ty,tx)
+						print rightPoint
+					elif rotVal >= -100:
+						tx = int(295+(self.mapVal(rotVal,-50,-100,0,20)))
+						ty = int(math.sqrt(400-(tx-295)**2) + 295)
+						#ty = 295 - (ty - 295)
+						leftPoint = (tx,ty)
+						print leftPoint
+						tx = int(295-(self.mapVal(rotVal,-50,-100,0,20)))
+						ty = int(math.sqrt(400-(tx-295)**2) + 295)
+						ty = 295 - (ty - 295)
+						rightPoint = (tx,ty)
+						print rightPoint
+
 
 
 			#outside for events
-			if(x<=512+centerBuff and x>=512-centerBuff and y<=512+centerBuff and y>=512-centerBuff):
-				 self.mainDisp.fill(self.black)
-				 self.roverDisp.fill(self.white)
-
-			point = (int(self.mapVal(x,0,1023,0,self.width)),int(self.mapVal(y,0,1023,0,self.height)))
+			#if(x<=512+centerBuff and x>=512-centerBuff and y<=512+centerBuff and y>=512-centerBuff):
+			self.mainDisp.fill(self.black)
+			pygame.draw.circle(self.roverDisp,self.white,(295,295),295)
+			pygame.draw.line(self.roverDisp,self.black,(0,0),(590,590),1)
+			pygame.draw.line(self.roverDisp,self.black,(0,295),(590,295),1)
+			pygame.draw.line(self.roverDisp,self.black,(295,0),(295,590),1)
+			pygame.draw.line(self.roverDisp,self.black,(0,590),(590,0),1)
+			pygame.draw.circle(self.roverDisp,self.blue,leftPoint,5)
+			pygame.draw.circle(self.roverDisp,self.green,rightPoint,5)
 			pygame.draw.circle(self.roverDisp,self.red,point,5)
 
-			self.hairPin(centerBuff)
-			self.mainDisp.blit(self.roverDisp,(5,5))
+			#point = (int(self.mapVal(x,0,1023,0,self.width)),int(self.mapVal(y,0,1023,0,self.height)))
+			angle=0
+			diffAngle = 0
+			dist = 0
+			#if x!=512 and y!=512:
+			angle = self.getAngle(x,y)
+			print angle
 
+			if rotVal==0:
+				if angle <= 90 and angle >=1 and leftf >= rightr :
+					diffAngle = 90 - self.mapVal(leftf - rightr,0,255,0,45)
+					print "Leftf :"+str(leftf)+"Rightr : "+str(rightr)
+					dist = self.mapVal(leftf,0,255,0,295)
+					point = self.getCoordinates(diffAngle,dist)
+					point = (295+point[0],295-point[1])
+					pygame.draw.circle(self.roverDisp,self.red,point,5)
+					leftPoint = self.getCoordinates(diffAngle+90,20)
+					print leftPoint
+					leftPoint = (point[0]+leftPoint[0],point[1]-leftPoint[1])
+					rightPoint = self.getCoordinates(-(90-diffAngle),20)
+					print rightPoint
+					rightPoint = (point[0]+rightPoint[0],point[1]-rightPoint[1])
+					pygame.draw.circle(self.roverDisp,self.blue,leftPoint,5)
+					pygame.draw.circle(self.roverDisp,self.green,rightPoint,5)
+					print "diff angle :"+str(diffAngle)
+					print "distance : "+str(dist)
+
+				elif angle <= 180 and angle >=91 and rightr >= leftf:
+					diffAngle = 90 + self.mapVal(rightr - leftf,0,255,0,45)
+					print "Leftf :"+str(leftf)+"Rightr : "+str(rightr)
+					dist = self.mapVal(rightr,0,255,0,295)
+					point = self.getCoordinates(diffAngle,dist)
+					point = (295+point[0],295-point[1])
+					pygame.draw.circle(self.roverDisp,self.red,point,5)
+					leftPoint = self.getCoordinates(diffAngle+90,20)
+					print leftPoint
+					leftPoint = (point[0]+leftPoint[0],point[1]-leftPoint[1])
+					rightPoint = self.getCoordinates(-(90-diffAngle),20)
+					print rightPoint
+					rightPoint = (point[0]+rightPoint[0],point[1]-rightPoint[1])
+					pygame.draw.circle(self.roverDisp,self.blue,leftPoint,5)
+					pygame.draw.circle(self.roverDisp,self.green,rightPoint,5)
+					print "diff angle :"+str(diffAngle)
+					print "distance : "+str(dist)
+
+				elif angle <= 270 and angle >=181 and rightf >= leftr:
+					diffAngle = 180 + 90 - self.mapVal(rightf - leftr,0,255,0,45)
+					print "Leftr :"+str(leftr)+"Rightf : "+str(rightf)
+					dist = self.mapVal(rightf,0,255,0,295)
+					point = self.getCoordinates(diffAngle,dist)
+					point = (295+point[0],295-point[1])
+					pygame.draw.circle(self.roverDisp,self.red,point,5)
+					leftPoint = self.getCoordinates(diffAngle+90,20)
+					print leftPoint
+					leftPoint = (point[0]+leftPoint[0],point[1]-leftPoint[1])
+					rightPoint = self.getCoordinates(-(90-diffAngle),20)
+					print rightPoint
+					rightPoint = (point[0]+rightPoint[0],point[1]-rightPoint[1])
+					pygame.draw.circle(self.roverDisp,self.blue,leftPoint,5)
+					pygame.draw.circle(self.roverDisp,self.green,rightPoint,5)
+					print "diff angle :"+str(diffAngle)
+					print "distance : "+str(dist)
+
+				elif angle <= 360 and angle >=271 and leftr >= rightf:
+					diffAngle = 270 + self.mapVal(leftr - rightf,0,255,0,45)
+					print "Leftr :"+str(leftr)+"Rightf : "+str(rightf)
+					dist = self.mapVal(leftr,0,255,0,295)
+					point = self.getCoordinates(diffAngle,dist)
+					point = (295+point[0],295-point[1])
+					pygame.draw.circle(self.roverDisp,self.red,point,5)
+					leftPoint = self.getCoordinates(diffAngle+90,20)
+					print leftPoint
+					leftPoint = (point[0]+leftPoint[0],point[1]-leftPoint[1])
+					rightPoint = self.getCoordinates(-(90-diffAngle),20)
+					print rightPoint
+					rightPoint = (point[0]+rightPoint[0],point[1]-rightPoint[1])
+					pygame.draw.circle(self.roverDisp,self.blue,leftPoint,5)
+					pygame.draw.circle(self.roverDisp,self.green,rightPoint,5)
+					print "diff angle :"+str(diffAngle)
+					print "distance : "+str(dist)
+
+
+			
+				
+
+			'''if(angle<=90 and rotVal==0):
+				t = leftf - rightr
+				angle = self.mapVal(t,0,255,0,45) '''
+
+			self.hairPin(centerBuff)
+			self.processBut()
+			self.mainDisp.blit(self.roverDisp,(5,5))
+			self.mainDisp.blit(self.buttonDisp,(600,5))
+			self.mainDisp.blit(self.sensorDisp,(600,300))
 			pygame.display.update()
 
 

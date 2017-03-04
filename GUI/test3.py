@@ -10,8 +10,8 @@ joy.init()
 
 while True:
 	for event in pygame.event.get():
-		if event.type == pygame.JOYBUTTONDOWN :
+		if event.type == pygame.JOYBUTTONUP :
 			for i in range(joy.get_numbuttons()):
-				if joy.get_button(i) == 1:
+				if joy.get_button(i) == 0:
 					print i
 					
